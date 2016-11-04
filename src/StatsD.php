@@ -3,10 +3,8 @@
 namespace Drupal\statsd;
 
 /**
- * Sends statistics to the stats daemon over UDP
- *
+ * Sends statistics to the stats daemon over UDP.
  */
-
 class StatsD {
 
   /**
@@ -18,28 +16,24 @@ class StatsD {
    *   The elapsed time (ms) to log.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function timing($stat, $time, $sample_rate = NULL) {
     self::send(array($stat => "$time|ms"), $sample_rate);
   }
 
-
   /**
    * Sends a gauge, an arbitrary value to statsd.
    *
    * @param string $stat
-   *   The metric to send. 
+   *   The metric to send.
    * @param mixed $value
    *   The value to send for this metric.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function gauge($stat, $value, $sample_rate = NULL) {
     self::send(array($stat => "$value|g"), $sample_rate);
   }
-
 
   /**
    * Sends one or more set values to statsd.
@@ -52,7 +46,6 @@ class StatsD {
    *   The value (or array of values) to send for this metric.
    * @param float $sample_rate
    *   (optional) A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function set($stat, $values, $sample_rate = NULL) {
     $data = array();
@@ -68,7 +61,6 @@ class StatsD {
     self::send($data, $sample_rate);
   }
 
-
   /**
    * Increments one or more stats counters.
    *
@@ -76,12 +68,10 @@ class StatsD {
    *   A string or an array of string representing the metric(s) to increment.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function increment($stats, $sample_rate = NULL) {
     self::updateStats($stats, 1, $sample_rate);
   }
-
 
   /**
    * Decrements one or more stats counters.
@@ -90,40 +80,35 @@ class StatsD {
    *   A string or an array of string representing the metric(s) to decrement.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function decrement($stats, $sample_rate = NULL) {
     self::updateStats($stats, -1, $sample_rate);
   }
 
-
   /**
    * Updates one or more stats counters by arbitrary amounts.
    *
    * @param mixed $stats
-   *   A string or an array of string representing the metric(s) to increment or decrement.
+   *   A string or an array of string representing the metric(s) to increment or
+   *   decrement.
    * @param int $delta
    *   The amount to increment/decrement each metric by.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sampling rate.
-   *
    */
   public static function updateStats($stats, $delta = 1, $sample_rate = NULL) {
-
     $data = array();
 
     if (!is_array($stats)) {
       $stats = array($stats);
     }
 
-    foreach($stats as $stat) {
+    foreach ($stats as $stat) {
       $data[$stat] = "$delta|c";
     }
 
     self::send($data, $sample_rate);
-
   }
-
 
   /**
    * Squirt the metrics over UDP.
@@ -132,17 +117,15 @@ class StatsD {
    *   The data to send.
    * @param float $sample_rate
    *   A float between 0 and 1 representing the sample rate.
-   *
    */
   public static function send($data, $sample_rate = NULL) {
-
-    if (! \Drupal::config('statsd.settings')->get('enabled') ) {
+    if (!\Drupal::config('statsd.settings')->get('enabled')) {
       return;
     }
 
     $sample_rate  = $sample_rate ? $sample_rate : \Drupal::config('statsd.settings')->get('sample_rate');
     $sampled_data = array();
-    $data         = self::prefixData($data);
+    $data = self::prefixData($data);
 
     if ($sample_rate < 1) {
       foreach ($data as $stat => $value) {
@@ -150,11 +133,12 @@ class StatsD {
           $sampled_data[$stat] = "$value|@$sample_rate";
         }
       }
-    } else {
+    }
+    else {
       $sampled_data = $data;
     }
 
-    if (empty($sampled_data) ) {
+    if (empty($sampled_data)) {
       return;
     }
 
@@ -169,32 +153,27 @@ class StatsD {
       }
       fclose($fp);
     }
-
   }
-
 
   /**
    * Create the data strings that will be passed into statsd.
-   * 
-   * @param $data
+   *
+   * @param array $data
    *   An array of key value pairs to prefix.
    *
    * @return array
-   * 
+   *   An array of data strings.
    */
   protected static function prefixData($data) {
-
-    $prefix = ($prefix = \Drupal::config('statsd.settings')->get('prefix') ) ? $prefix . '.' : '';
-    $suffix = ($suffix = \Drupal::config('statsd.settings')->get('suffix') ) ? '.' . $suffix : '';
+    $prefix = ($prefix = \Drupal::config('statsd.settings')->get('prefix')) ? $prefix . '.' : '';
+    $suffix = ($suffix = \Drupal::config('statsd.settings')->get('suffix')) ? '.' . $suffix : '';
     $return = array();
 
     foreach ($data as $key => $value) {
       $name = $prefix . $key . $suffix;
       $return[$name] = $value;
     }
-
     return $return;
-
   }
 
 }

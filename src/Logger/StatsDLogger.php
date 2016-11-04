@@ -7,25 +7,38 @@ use Drupal\Core\Logger\RfcLogLevel;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
+/**
+ * Class StatsDLogger.
+ *
+ * @package Drupal\statsd\Logger
+ */
 class StatsDLogger implements LoggerInterface {
+
   use RfcLoggerTrait;
 
+  /**
+   * The config.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
   protected $config;
 
   /**
    * Construct a StatsDLogger interface to allow log event response.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   The config.
    */
   public function __construct(ConfigFactoryInterface $config) {
     $this->config = $config->get('statsd.settings');
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function log($level, $message, array $context = array()) {
-
     if ($context['channel'] != 'statsd') {
-      $enabled        = $this->config->get('events.watchdog_events');
+      $enabled = $this->config->get('events.watchdog_events');
       $eventThreshold = $this->config->get('events.watchdog_level');
 
       if (!$enabled || $eventThreshold < $level) {
@@ -40,7 +53,6 @@ class StatsDLogger implements LoggerInterface {
       }
 
       $levels = RfcLogLevel::getLevels();
-
       $data = array(
         'watchdog.type.' . $context['channel'],
         'watchdog.severity.' . $levels[$level],

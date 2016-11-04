@@ -12,20 +12,38 @@ use Drupal\Core\Database\Connection;
  */
 class StatsdEventSubscriber implements EventSubscriberInterface {
 
+  /**
+   * The config.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
   protected $config;
 
-  protected $dbConnection;
+  /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
   /**
    * Constructs a StatsdEventSubscriber object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   The config.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database.
    */
-  public function __construct(ConfigFactoryInterface $config, Connection $dbConnection) {
+  public function __construct(
+      ConfigFactoryInterface $config,
+      Connection $database
+  ) {
     $this->config = $config->get('statsd.settings');
-    $this->dbConnection = $dbConnection;
+    $this->database = $database;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
     // Setting low priority to go early in the event stack.
@@ -47,11 +65,10 @@ class StatsdEventSubscriber implements EventSubscriberInterface {
 
   /**
    * Set configured metrics on shut down.
-   *
    */
   public function statsdTerminateHandler() {
     if ($this->config->get('events.user_events')) {
-      $active_sessions = $this->dbConnection->query("SELECT count(*) as num FROM {sessions} WHERE timestamp > UNIX_TIMESTAMP() - 3600")->fetchField();
+      $active_sessions = $this->database->query("SELECT count(*) as num FROM {sessions} WHERE timestamp > UNIX_TIMESTAMP() - 3600")->fetchField();
       statsd_call('user_events.active_sessions', 'gauge', $active_sessions);
       statsd_call('user_events.page_view');
     }
@@ -68,8 +85,6 @@ class StatsdEventSubscriber implements EventSubscriberInterface {
         statsd_call('performance_events.execution_time', 'timing', $time);
       }
     }
-
   }
 
 }
-
