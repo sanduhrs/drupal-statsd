@@ -1,0 +1,7 @@
+name: StatsD
+description: 'Logs and records system events to Graphite via StatsD.'
+
+type: module
+core: 8.x
+package: Development
+configure: statsd.admin_settings

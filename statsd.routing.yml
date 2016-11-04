@@ -1,0 +1,7 @@
+statsd.admin_settings:
+  path: '/admin/config/development/statsd'
+  defaults:
+    _form: '\Drupal\statsd\Form\StatsdAdminSettingsForm'
+    _title: 'StatsD Settings'
+  requirements:
+    _permission: 'administer site configuration'

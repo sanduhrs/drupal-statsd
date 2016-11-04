@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file Contains helper functions and hook implementations for StatsD.
+ *
+ */
+
+use Drupal\statsd\StatsD;
+
+/**
+ * Implements hook_user_login().
+ *
+ * @inheritdoc
+ */
+function statsd_user_login(&$edit, $account) {
+
+  if (! \Drupal::config('statsd.settings')->get('events.user_events') ) {
+    return;
+  }
+
+  statsd_call('user_events.successful_login');
+
+}
+
+/**
+ * Send failed login attempt
+ *
+ * @param string $account
+ *   The username of the user for whom login failed.
+ *
+ * @return Null
+ */
+function statsd_user_login_failed($account) {
+
+  if (! \Drupal::config('statsd.settings')->get('events.user_events') ) {
+    return;
+  }
+
+  statsd_call('user_events.failed_login');
+
+}
+
+
+/**
+ * Implements hook_logger_event().
+ *
+ * @see https://drupal.org/project/logger
+ *
+ */
+function statsd_logger_event($name, $type, $value) {
+  statsd_call($name, $type, $value);
+}
+
+
+/* End of hooks, API functions follow.
+---------------------------------------------------------------------- */
+
+/**
+ * The generic statsd wrapper. Used for convenience.
+ *
+ * @param $name
+ *   Name of the value you want to track.
+ * @param $type
+ *   The type of action you want to take with the value.
+ * @param $value
+ *   The numeric value you wish to pass to statsd.
+ *
+ */
+function statsd_call($name, $type = 'increment', $value = NULL) {
+
+  switch ($type) {
+    case 'count':
+      StatsD::updateStats($name, $value);
+      break;
+    case 'increment':
+      StatsD::updateStats($name, $value ?: 1);
+      break;
+    case 'decrement':
+      StatsD::updateStats($name, $value ?: -1);
+      break;
+    case 'gauge':
+      StatsD::gauge($name, $value);
+      break;
+    case 'set':
+      StatsD::set($name, $value);
+      break;
+    case 'time':
+    case 'timing':
+      StatsD::timing($name, $value);
+      break;
+    default:
+      \Drupal::logger('statsd')->warning('Unknown method called for statsd: %type', array('%type' => $type));
+      break;
+  }
+
+}

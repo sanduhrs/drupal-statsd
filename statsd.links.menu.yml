@@ -1,0 +1,5 @@
+statsd.admin_settings:
+  title: 'StatsD Settings'
+  description: 'Settings for statsd logging. StatsD is a Node JS daemon that aggregates statistics for visibility in Graphite. Best suited for compiling arbitrary statistics on various developer implemented metrics, this module can also be used to send all system events (via watchdog calls) to Graphite.'
+  route_name: statsd.admin_settings
+  parent: 'system.admin_config_development'
