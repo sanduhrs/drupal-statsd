@@ -10,7 +10,7 @@ use Drupal\statsd\StatsD;
 /**
  * Implements hook_user_login().
  */
-function statsd_user_login(&$edit, $account) {
+function statsd_user_login() {
   if (!\Drupal::config('statsd.settings')->get('events.user_events')) {
     return;
   }
@@ -23,7 +23,7 @@ function statsd_user_login(&$edit, $account) {
  * @param string $account
  *   The username of the user for whom login failed.
  */
-function statsd_user_login_failed($account) {
+function statsd_user_login_failed() {
   if (!\Drupal::config('statsd.settings')->get('events.user_events')) {
     return;
   }

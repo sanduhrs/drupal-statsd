@@ -45,11 +45,12 @@ class StatsDLogger implements LoggerInterface {
         return;
       }
 
+      // Track a unsuccessful user login.
       if (strstr($message, 'Login attempt failed')) {
         // The user key in the context appears to be an instance of the
         // AccountProxy class.
         // @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Session!AccountProxy.php/class/AccountProxy/8.2.x
-        statsd_user_login_failed($context['user']->getAccountName());
+        statsd_user_login_failed();
       }
 
       $levels = RfcLogLevel::getLevels();
