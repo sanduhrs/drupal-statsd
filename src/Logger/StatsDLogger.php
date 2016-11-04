@@ -45,6 +45,11 @@ class StatsDLogger implements LoggerInterface {
         return;
       }
 
+      // Track a successful user login.
+      if (strstr($message, 'Session opened for')) {
+        statsd_user_login();
+      }
+
       // Track a unsuccessful user login.
       if (strstr($message, 'Login attempt failed')) {
         // The user key in the context appears to be an instance of the
